@@ -3,6 +3,7 @@ module Main where
 import Random
 import Array
 import Data.Ix
+import Control.Monad
 
 import Graphics.UI.SDL.Image as Image
 import Graphics.UI.SDL as SDL
@@ -58,10 +59,8 @@ main =
       SDL.init [InitEverything]
       screen <- setVideoMode screen_width screen_height screen_bpp []
       setCaption "SameHask" []
-      ball1 <- load_ball 1
-      ball2 <- load_ball 2
-      ball3 <- load_ball 3
-      apply_surface 0 0 ball1 screen
+      balls <- mapM load_ball [1..3]
+      apply_surface 0 0 (head balls) screen
       SDL.flip screen
       quitHandler
     where
