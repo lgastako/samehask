@@ -18,6 +18,9 @@ h = 10
 w :: Int
 w  = 10
 
+bw :: Int
+bw = 28
+
 
 quitHandler :: IO ()
 quitHandler = do
@@ -61,6 +64,8 @@ main =
       setCaption "SameHask" []
       balls <- mapM load_ball [1..3]
       apply_surface 0 0 (head balls) screen
+      apply_surface bw 0 (head (tail balls)) screen
+      apply_surface 0 bw (head (tail (tail balls))) screen
       SDL.flip screen
       quitHandler
     where
