@@ -36,7 +36,6 @@ quitHandler = do
 
 load_image :: String -> IO Surface
 load_image filename = load filename >>= displayFormat
---load_image = load >>= displayFormat
 
 
 apply_surface :: Int -> Int -> Surface -> Surface -> IO Bool
@@ -47,6 +46,7 @@ apply_surface x y src dst =
 
 random_ball :: IO Int
 random_ball = (getStdRandom . randomR) (0,(dec num_balls))
+
 
 -- Lame.  TODO: Do away with this hack.
 random_ball_xy :: Int -> Int -> Int
@@ -59,6 +59,7 @@ new_board =
                                                   y <- range (0, h - 1)]
       where rxy = random_ball_xy
 
+
 load_ball :: Int -> IO Surface
 load_ball n = load_image ("images/ball-" ++ (show n) ++ ".png")
 
@@ -66,6 +67,7 @@ load_ball n = load_image ("images/ball-" ++ (show n) ++ ".png")
 -- TODO: Really?
 dec :: Int -> Int
 dec n = n - 1
+
 
 draw_cell :: Game -> Surface -> Int -> Int -> IO Bool
 draw_cell (b, balls) s y x =
