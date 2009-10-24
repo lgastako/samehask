@@ -82,7 +82,7 @@ draw_board g s =
     draw_down_rows g s (pred h)
 
 
-get_ball :: Board -> Point -> Int
+get_ball :: Board -> Point -> Ball
 get_ball b (x, y) = (b !! y) !! x
 
 
@@ -102,7 +102,7 @@ point_r :: Point -> Point
 point_r (x, y) = (x + 1, y)
 
 
-eradicate :: Board -> Point -> Int -> Board
+eradicate :: Board -> Point -> Ball -> Board
 eradicate board point ball
     | out_of_bounds point = board
     | wrong_color (get_ball board point) ball = board
@@ -154,6 +154,3 @@ main =
       screen_width  = w * bw
       screen_height = h * bw
       screen_bpp    = 32
-
-
-
