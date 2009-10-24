@@ -6,10 +6,12 @@ import Control.Monad
 import Graphics.UI.SDL.Image as Image
 import Graphics.UI.SDL as SDL
 
-type Board = [[Int]]
-type Game  = (Board, [Surface])
-type Point = (Int, Int)
 type Ball  = Int
+type BallViews = [Surface]
+
+type Board = [[Int]]
+type Game  = (Board, BallViews)
+type Point = (Int, Int)
 
 type Filename = String
 
@@ -122,12 +124,13 @@ mouse_point_to_board_point :: Point -> Point
 mouse_point_to_board_point (x, y) = (x `div` w, y `div` h)
 
 
-remove_from_mouse_click :: Board -> Point -> Board
-remove_from_mouse_click b click =
-    eradicate b location ball
+remove_from_mouse_click :: Game -> Point -> Game
+remove_from_mouse_click game click =
+    (eradicate board location ball, balls)
     where
-      ball  = get_ball b location
-      location = mouse_point_to_board_point click
+      (board, balls) = game
+      ball           = get_ball board location
+      location       = mouse_point_to_board_point click
 
 
 game_loop :: Game -> Surface -> IO ()
@@ -139,7 +142,12 @@ game_loop game screen =
       case event of
         Quit -> quit
         KeyDown (Keysym SDLK_q _ _) -> quit
-        otherwise -> game_loop game screen
+        MouseButtonDown x y ButtonLeft ->
+            game_loop (remove_from_mouse_click game mouse_point) screen
+            where
+              mouse_point = (fromIntegral x, fromIntegral y)
+        otherwise ->
+            game_loop game screen
       where
         quit = return ()
 
