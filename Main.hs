@@ -53,6 +53,7 @@ random_ball = (getStdRandom . randomR) (1,num_balls)
 new_row :: IO [Ball]
 new_row = forM [0..w] (\_ -> random_ball)
 
+
 new_board :: IO Board
 new_board = forM [0..h] (\_ -> new_row)
 
@@ -87,6 +88,14 @@ get_ball :: Board -> Point -> Ball
 get_ball b (x, y) = (b !! y) !! x
 
 
+set_ball :: Board -> Point -> Ball -> Board
+set_ball board point ball = [[update x y | x <- [0..w]] | y <- [0..h]]
+    where
+      update x y
+          | (x, y) == point = ball
+          | otherwise       = get_ball board (x, y)
+
+
 up :: Point -> Point
 up (x, y) = (x, y - 1)
 
@@ -103,14 +112,6 @@ right :: Point -> Point
 right (x, y) = (x + 1, y)
 
 
-set_ball :: Board -> Point -> Ball -> Board
-set_ball board point ball = [[update x y | x <- [0..w]] | y <- [0..h]]
-    where
-      update x y
-          | (x, y) == point = ball
-          | otherwise       = get_ball board (x, y)
-
-
 out_of_bounds :: Point -> Bool
 out_of_bounds (x,y)
     | x < 0 = True
@@ -120,7 +121,12 @@ out_of_bounds (x,y)
     | otherwise = False
 
 
+empty :: Board -> Point -> Bool
+empty board point = get_ball board point == 0
+
+
 eradicate :: Board -> Point -> Ball -> Board
+eradicate board _ 0 = board
 eradicate board point ball
     | out_of_bounds point = board
     | this_ball /= ball   = board
@@ -140,11 +146,11 @@ eradicate board point ball
 
 
 mouse_point_to_board_point :: Point -> Point
-mouse_point_to_board_point (x, y) = (adjust x, adjust y)
-    where adjust = (`div` bw)
+mouse_point_to_board_point (x, y) = (f x, f y)
+    where f = (`div` bw)
 
 
-drop_col :: Board -> (Int, Int) -> Board
+drop_col :: Board -> Point -> Board
 drop_col board point
     | out_of_bounds point     = board
     | out_of_bounds above     = board
@@ -160,17 +166,13 @@ drop_col board point
            above = down point
 
 
-empty :: Board -> Point -> Bool
-empty board point = get_ball board point == 0
-
-
 collapse_point :: Point -> Board -> Board
 collapse_point point board
     | x > w = collapse_point (0, succ y) board
     | y > h = board
     | otherwise =
         if empty board point
-        then collapse_point origin $ drop_col board point
+        then collapse_point point $ drop_col board point
         else collapse_point (right point) board
             where (x, y) = point
 
