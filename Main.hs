@@ -11,8 +11,9 @@ type Board = [[Int]]
 type Game  = (Board, [Surface])
 type Point = (Int, Int)
 
-xx = fst
-yy = snd
+-- Gratuitous?
+type Filename = String
+
 
 -- "Constants"
 num_balls :: Int
@@ -36,7 +37,7 @@ quitHandler = do
     otherwise -> quitHandler
 
 
-load_image :: String -> IO Surface
+load_image :: Filename -> IO Surface
 load_image filename = load filename >>= displayFormat
 
 
@@ -51,12 +52,12 @@ random_ball = (getStdRandom . randomR) (0,(dec num_balls))
 
 
 -- Lame.  TODO: Do away with this hack.
-random_ball_xy :: Int
-random_ball_xy = unsafePerformIO random_ball
+random_ball_xy :: Int -> Int -> Int
+random_ball_xy _ _ = unsafePerformIO random_ball
 
 
 new_board :: Board
-new_board = [ [ random_ball_xy | _ <- [0..w]] | _ <- [0..h] ]
+new_board = [ [ random_ball_xy x y | x <- [0..w]] | y <- [0..h] ]
 
 
 load_ball :: Int -> IO Surface
