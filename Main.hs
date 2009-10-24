@@ -27,14 +27,6 @@ bw :: Int
 bw = 28
 
 
-quitHandler :: IO ()
-quitHandler = do
-  e <- waitEvent
-  case e of
-    Quit -> return ()
-    otherwise -> quitHandler
-
-
 load_image :: Filename -> IO Surface
 load_image filename = load filename >>= displayFormat
 
@@ -138,6 +130,17 @@ remove_from_mouse_click b click =
       location = mouse_point_to_board_point click
 
 
+game_loop :: Game -> Surface -> IO ()
+game_loop game screen =
+    do
+      draw_board game screen
+      SDL.flip screen
+      event <- waitEvent
+      case event of
+        Quit -> return ()
+        otherwise -> game_loop game screen
+
+
 main :: IO ()
 main =
     do
@@ -146,10 +149,7 @@ main =
       setCaption "SameHask" []
       balls <- mapM load_ball [0..3]
       board <- new_board
---      draw_board ((remove_from_mouse_click board (0, 0)), balls) screen
-      draw_board (board, balls) screen
-      SDL.flip screen
-      quitHandler
+      game_loop (board, balls) screen
     where
       screen_width  = w * bw
       screen_height = h * bw
