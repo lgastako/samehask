@@ -1,16 +1,18 @@
 module Main where
 
 import Random
-import Array
-import Data.Ix
 import Control.Monad
 import System.IO.Unsafe
 
 import Graphics.UI.SDL.Image as Image
 import Graphics.UI.SDL as SDL
 
-type Board = Array (Int, Int) Int
+type Board = [[Int]]
 type Game  = (Board, [Surface])
+type Point = (Int, Int)
+
+xx = fst
+yy = snd
 
 -- "Constants"
 num_balls :: Int
@@ -49,15 +51,12 @@ random_ball = (getStdRandom . randomR) (0,(dec num_balls))
 
 
 -- Lame.  TODO: Do away with this hack.
-random_ball_xy :: Int -> Int -> Int
-random_ball_xy x y = unsafePerformIO random_ball
+random_ball_xy :: Int
+random_ball_xy = unsafePerformIO random_ball
 
 
 new_board :: Board
-new_board =
-      array ((0, 0), (w, h)) [((x, y), rxy x y) | x <- range (0, w - 1),
-                                                  y <- range (0, h - 1)]
-      where rxy = random_ball_xy
+new_board = [ [ random_ball_xy | _ <- [0..w]] | _ <- [0..h] ]
 
 
 load_ball :: Int -> IO Surface
@@ -71,7 +70,7 @@ dec n = n - 1
 
 draw_cell :: Game -> Surface -> Int -> Int -> IO Bool
 draw_cell (b, balls) s y x =
-      apply_surface (x * bw) (y * bw) (balls !! (b ! (x, y))) s
+      apply_surface (x * bw) (y * bw) (balls !! (get_value_at b (x, y))) s
 
 
 draw_down_cols :: Game -> Surface -> Int -> Int -> IO Bool
@@ -89,6 +88,54 @@ draw_down_rows g s y
 draw_board :: Game -> Surface -> IO Bool
 draw_board g s =
     draw_down_rows g s (dec h)
+
+
+build_eradication_list :: Board -> Point -> Int -> [Point] -> [Point]
+build_eradication_list b (x, y) v accum
+    | (x < 0) || (y < 0)  = accum
+    | (x > w) || (y > h)  = accum
+    | (x, y) `elem` accum = accum
+    | otherwise           =
+        build_eradication_list b ((pred x), y) v accum3
+        where
+          accum3 = build_eradication_list b ((succ x), y) v accum2
+          accum2 = build_eradication_list b (x, (pred y)) v accum1
+          accum1 = build_eradication_list b (x, (succ y)) v accum
+
+
+-- From here:
+-- http://hackage.haskell.org/packages/archive/luhn/0.1/doc/html/src/Luhn.html
+-- Like Python's enumerate function - returns a tuple where the first
+-- element is the index from 0 of the second element in the input list.
+enumerate :: Integral n => [a] -> [(n, a)]
+enumerate xs = enumerate' 0 xs
+    where
+        enumerate' _ [] = []
+        enumerate' counter (a:as) =
+            (counter, a) : enumerate' (counter + 1) as
+
+
+eradicate :: Board -> [Point] -> Board
+eradicate b []     = b
+eradicate b points =
+   [handle_row y row | (y, row) <- enumerate b]
+   where
+     handle_row y row =
+         [handle_col y x v | (x, v) <- enumerate row]
+     handle_col y x v
+         | (x, y) `elem` points = 0
+         | otherwise            = v
+
+
+get_value_at :: Board -> Point -> Int
+get_value_at b (x, y) = (b !! y) !! x
+
+
+remove_adjacent :: Board -> (Int, Int) -> Board
+remove_adjacent b xy =
+    eradicate b eradication_list
+    where eradication_list = build_eradication_list b xy value []
+          value = get_value_at b xy
 
 
 main :: IO ()
