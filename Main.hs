@@ -137,6 +137,14 @@ remove_adjacent b xy =
     where eradication_list = build_eradication_list b xy value []
           value = get_ball b xy
 
+mouse_point_to_board_point :: Point -> Point
+mouse_point_to_board_point (x, y) = (x `div` w, y `div` h)
+
+
+remove_from_mouse_click :: Board -> Point -> Board
+remove_from_mouse_click b click =
+    remove_adjacent b $ mouse_point_to_board_point click
+
 
 main :: IO ()
 main =
