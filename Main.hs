@@ -14,7 +14,6 @@ type Ball  = Int
 type Filename = String
 
 
--- "Constants"
 num_balls :: Int
 num_balls = 3
 
@@ -155,7 +154,6 @@ main =
       screen_width  = w * bw
       screen_height = h * bw
       screen_bpp    = 32
-      std_gen       = mkStdGen 1
 
 
 
