@@ -96,37 +96,46 @@ point_r :: Point -> Point
 point_r (x, y) = (x + 1, y)
 
 
-eradicate :: Board -> Point -> Ball -> Board
-eradicate board point ball
-    | out_of_bounds point = board
-    | wrong_color (get_ball board point) ball = board
-    | otherwise =
-        (eradicate
-         (eradicate
-          (eradicate
-           (eradicate
-            board
-            (point_u point) ball)
-           (point_d point) ball)
-          (point_l point) ball)
-         (point_r point) ball)
-        where wrong_color = (/=)
-              out_of_bounds (x,y)
-                  | x < 0 = True
-                  | y < 0 = True
-                  | x > w = True
-                  | y > h = True
-                  | otherwise = False
+-- eradicate :: Board -> Point -> Ball -> Board
+-- eradicate board point ball
+--     | out_of_bounds point = board
+--     | wrong_color (get_ball board point) ball = board
+--     | otherwise =
+--         (eradicate
+--          (eradicate
+--           (eradicate
+--            (eradicate
+--             board
+--             (point_u point) ball)
+--            (point_d point) ball)
+--           (point_l point) ball)
+--          (point_r point) ball)
+--         where wrong_color = (/=)
+--               out_of_bounds (x,y)
+--                   | x < 0 = True
+--                   | y < 0 = True
+--                   | x > w = True
+--                   | y > h = True
+--                   | otherwise = False
 
+eradicate :: Board -> Point -> Ball -> Board
+eradicate board point ball = [[update x y | x <- [0..w]] | y <- [0..h]]
+    where update x y
+              | (x, y) == point = 0
+              | otherwise       = get_ball board (x, y)
 
 
 mouse_point_to_board_point :: Point -> Point
-mouse_point_to_board_point (x, y) = (x `div` w, y `div` h)
+mouse_point_to_board_point (x, y) = (x `div` bw, y `div` bw)
+
+
+collapse :: Board -> Board
+collapse = id -- for now
 
 
 remove_from_mouse_click :: Game -> Point -> Game
 remove_from_mouse_click game click =
-    (eradicate board location ball, balls)
+    (collapse (eradicate board location ball), balls)
     where
       (board, balls) = game
       ball           = get_ball board location
@@ -142,10 +151,12 @@ game_loop game screen =
       case event of
         Quit -> quit
         KeyDown (Keysym SDLK_q _ _) -> quit
-        MouseButtonDown x y ButtonLeft ->
+        MouseButtonDown x y ButtonLeft -> do
+            putStrLn $ show mouse_point ++ show dbg_remove_me
             game_loop (remove_from_mouse_click game mouse_point) screen
             where
               mouse_point = (fromIntegral x, fromIntegral y)
+              dbg_remove_me = mouse_point_to_board_point mouse_point
         otherwise ->
             game_loop game screen
       where
