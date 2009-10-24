@@ -201,6 +201,11 @@ game_loop game screen =
       case event of
         Quit -> quit
         KeyDown (Keysym SDLK_q _ _) -> quit
+        KeyDown (Keysym SDLK_r _ _) -> do
+            nb <- new_board
+            game_loop (nb, balls) screen
+            where
+              (_, balls) = game
         MouseButtonDown x y ButtonLeft -> do
             putStrLn $ show mouse_point ++ show dbg_remove_me
             game_loop (remove_from_mouse_click game mouse_point) screen
