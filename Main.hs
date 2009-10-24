@@ -19,11 +19,14 @@ type Filename = String
 num_balls :: Int
 num_balls = 3
 
+
 h :: Int
 h = 20
 
+
 w :: Int
 w  = 20
+
 
 bw :: Int
 bw = 28
