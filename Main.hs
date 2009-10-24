@@ -83,49 +83,50 @@ get_ball :: Board -> Point -> Ball
 get_ball b (x, y) = (b !! y) !! x
 
 
-point_u :: Point -> Point
-point_u (x, y) = (x, y - 1)
+up :: Point -> Point
+up (x, y) = (x, y - 1)
 
 
-point_d :: Point -> Point
-point_d (x, y) = (x, y + 1)
+down :: Point -> Point
+down (x, y) = (x, y + 1)
 
 
-point_l :: Point -> Point
-point_l (x, y) = (x - 1, y)
+left :: Point -> Point
+left (x, y) = (x - 1, y)
 
 
-point_r :: Point -> Point
-point_r (x, y) = (x + 1, y)
+right :: Point -> Point
+right (x, y) = (x + 1, y)
 
-
--- eradicate :: Board -> Point -> Ball -> Board
--- eradicate board point ball
---     | out_of_bounds point = board
---     | wrong_color (get_ball board point) ball = board
---     | otherwise =
---         (eradicate
---          (eradicate
---           (eradicate
---            (eradicate
---             board
---             (point_u point) ball)
---            (point_d point) ball)
---           (point_l point) ball)
---          (point_r point) ball)
---         where wrong_color = (/=)
---               out_of_bounds (x,y)
---                   | x < 0 = True
---                   | y < 0 = True
---                   | x > w = True
---                   | y > h = True
---                   | otherwise = False
 
 eradicate :: Board -> Point -> Ball -> Board
-eradicate board point ball = [[update x y | x <- [0..w]] | y <- [0..h]]
-    where update x y
+eradicate board point ball
+    | out_of_bounds point = board
+    | this_ball /= ball = board
+    | otherwise =
+        let new_board = [[update x y | x <- [0..w]] | y <- [0..h]]
+            update x y
               | (x, y) == point = 0
               | otherwise       = get_ball board (x, y)
+        in
+          -- new_board
+          (eradicate
+           (eradicate
+            (eradicate
+             (eradicate new_board
+                            (up point) ball)
+             (down point) ball)
+            (left point) ball)
+           (right point) ball)
+
+        where
+          this_ball = get_ball board point
+          out_of_bounds (x,y)
+              | x < 0 = True
+              | y < 0 = True
+              | x > w = True
+              | y > h = True
+              | otherwise = False
 
 
 mouse_point_to_board_point :: Point -> Point
