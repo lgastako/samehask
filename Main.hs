@@ -131,7 +131,7 @@ get_ball :: Board -> Point -> Int
 get_ball b (x, y) = (b !! y) !! x
 
 
-remove_adjacent :: Board -> (Int, Int) -> Board
+remove_adjacent :: Board -> Point -> Board
 remove_adjacent b xy =
     eradicate b eradication_list
     where eradication_list = build_eradication_list b xy value []
