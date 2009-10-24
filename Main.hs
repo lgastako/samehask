@@ -137,8 +137,11 @@ game_loop game screen =
       SDL.flip screen
       event <- waitEvent
       case event of
-        Quit -> return ()
+        Quit -> quit
+        KeyDown (Keysym SDLK_q _ _) -> quit
         otherwise -> game_loop game screen
+      where
+        quit = return ()
 
 
 main :: IO ()
