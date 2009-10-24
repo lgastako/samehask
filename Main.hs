@@ -70,7 +70,7 @@ dec n = n - 1
 
 draw_cell :: Game -> Surface -> Int -> Int -> IO Bool
 draw_cell (b, balls) s y x =
-      apply_surface (x * bw) (y * bw) (balls !! (get_value_at b (x, y))) s
+      apply_surface (x * bw) (y * bw) (balls !! (get_ball b (x, y))) s
 
 
 draw_down_cols :: Game -> Surface -> Int -> Int -> IO Bool
@@ -127,15 +127,15 @@ eradicate b points =
          | otherwise            = v
 
 
-get_value_at :: Board -> Point -> Int
-get_value_at b (x, y) = (b !! y) !! x
+get_ball :: Board -> Point -> Int
+get_ball b (x, y) = (b !! y) !! x
 
 
 remove_adjacent :: Board -> (Int, Int) -> Board
 remove_adjacent b xy =
     eradicate b eradication_list
     where eradication_list = build_eradication_list b xy value []
-          value = get_value_at b xy
+          value = get_ball b xy
 
 
 main :: IO ()
