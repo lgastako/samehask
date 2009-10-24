@@ -32,6 +32,10 @@ bw :: Int
 bw = 28
 
 
+origin :: Point
+origin = (0, 0)
+
+
 load_image :: Filename -> IO Surface
 load_image filename = load filename >>= displayFormat
 
@@ -99,42 +103,82 @@ right :: Point -> Point
 right (x, y) = (x + 1, y)
 
 
+set_ball :: Board -> Point -> Ball -> Board
+set_ball board point ball = [[update x y | x <- [0..w]] | y <- [0..h]]
+    where
+      update x y
+          | (x, y) == point = ball
+          | otherwise       = get_ball board (x, y)
+
+
+out_of_bounds :: Point -> Bool
+out_of_bounds (x,y)
+    | x < 0 = True
+    | y < 0 = True
+    | x > w = True
+    | y > h = True
+    | otherwise = False
+
+
 eradicate :: Board -> Point -> Ball -> Board
 eradicate board point ball
     | out_of_bounds point = board
-    | this_ball /= ball = board
+    | this_ball /= ball   = board
     | otherwise =
-        let new_board = [[update x y | x <- [0..w]] | y <- [0..h]]
-            update x y
-              | (x, y) == point = 0
-              | otherwise       = get_ball board (x, y)
+        let new_board = set_ball board point 0
         in
-          -- new_board
           (eradicate
            (eradicate
             (eradicate
              (eradicate new_board
-                            (up point) ball)
+              (up point) ball)
              (down point) ball)
             (left point) ball)
            (right point) ball)
-
         where
           this_ball = get_ball board point
-          out_of_bounds (x,y)
-              | x < 0 = True
-              | y < 0 = True
-              | x > w = True
-              | y > h = True
-              | otherwise = False
 
 
 mouse_point_to_board_point :: Point -> Point
-mouse_point_to_board_point (x, y) = (x `div` bw, y `div` bw)
+mouse_point_to_board_point (x, y) = (adjust x, adjust y)
+    where adjust = (`div` bw)
 
 
-collapse :: Board -> Board
-collapse = id -- for now
+drop_col :: Board -> (Int, Int) -> Board
+drop_col board point
+    | out_of_bounds point     = board
+    | out_of_bounds above     = board
+    | empty board above       = board
+    | not $ empty board point = board
+    | otherwise =
+         let above_ball = get_ball board above
+             first_swap = set_ball board point above_ball
+             next_swap  = set_ball first_swap above 0
+         in
+           drop_col next_swap above
+         where
+           above = down point
+
+
+empty :: Board -> Point -> Bool
+empty board point = get_ball board point == 0
+
+
+collapse_point :: Point -> Board -> Board
+collapse_point point board
+    | x > w = collapse_point (0, succ y) board
+    | y > h = board
+    | otherwise =
+        if empty board point
+        then collapse_point origin $ drop_col board point
+        else collapse_point (right point) board
+            where (x, y) = point
+
+
+--collapse :: Board -> Board
+--collapse = collapse_point origin
+
+collapse = id
 
 
 remove_from_mouse_click :: Game -> Point -> Game
