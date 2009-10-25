@@ -40,8 +40,8 @@ load_image :: Filename -> IO Surface
 load_image filename = load filename >>= displayFormat
 
 
-apply_surface :: Int -> Int -> Surface -> Surface -> IO Bool
-apply_surface x y src dst =
+apply_surface :: Point  -> Surface -> Surface -> IO Bool
+apply_surface (x, y) src dst =
     blitSurface src Nothing dst (Just offset)
     where offset = Rect x y 0 0
 
@@ -64,7 +64,7 @@ load_ball n = load_image ("images/ball-" ++ (show n) ++ ".png")
 
 draw_cell :: Game -> Surface -> Int -> Int -> IO Bool
 draw_cell (b, balls) s y x =
-      apply_surface (x * bw) (y * bw) (balls !! (get_ball b (x, y))) s
+      apply_surface ((x * bw), (y * bw)) (balls !! (get_ball b (x, y))) s
 
 
 draw_down_cols :: Game -> Surface -> Int -> Int -> IO Bool
