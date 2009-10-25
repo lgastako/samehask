@@ -58,6 +58,15 @@ new_board :: IO Board
 new_board = forM [0..h] (\_ -> new_row)
 
 
+--new_new_board :: IO [(Point, Int)]
+new_new_board :: IO [(Point, Int)]
+new_new_board =
+--    forM [0..h] (\y -> forM [0..w] (\x -> ((x, y), random_ball)))
+    mapM (\pt -> do
+            b <- random_ball
+            (pt, b)) [(x, y) | y <- [0..h], x <- [0..w]]
+
+
 load_ball :: Ball -> IO Surface
 load_ball n = load_image ("images/ball-" ++ (show n) ++ ".png")
 
