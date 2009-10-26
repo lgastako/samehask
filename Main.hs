@@ -112,6 +112,10 @@ right :: Point -> Point
 right (x, y) = (x + 1, y)
 
 
+carraige_return :: Point -> Point
+carraige_return (x, y) = (0, succ y)
+
+
 out_of_bounds :: Point -> Bool
 out_of_bounds (x,y)
     | x < 0 = True
@@ -166,9 +170,13 @@ drop_col board point
            above = down point
 
 
+-- drop_col :: Board -> Point -> Board
+-- drop_col board point = set_ball board point 1
+
+
 collapse_point :: Point -> Board -> Board
 collapse_point point board
-    | x > w = collapse_point (0, succ y) board
+    | x > w = collapse_point (carraige_return point) board
     | y > h = board
     | otherwise =
         if empty board point
@@ -177,10 +185,10 @@ collapse_point point board
             where (x, y) = point
 
 
---collapse :: Board -> Board
---collapse = collapse_point origin
+collapse :: Board -> Board
+collapse = collapse_point origin
 
-collapse = id
+--collapse = id
 
 
 remove_from_mouse_click :: Game -> Point -> Game
